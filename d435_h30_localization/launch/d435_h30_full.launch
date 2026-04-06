@@ -1,0 +1,54 @@
+<launch>
+  <!-- D435 + H30 IMU + RTAB-Map 融合定位系统 -->
+  
+  <!-- 参数配置 -->
+  <arg name="enable_rtabmap" default="true" />
+  <arg name="imu_port" default="/dev/ttyACM0" />
+  <arg name="imu_baud" default="460800" />
+  
+  <!-- 1. 启动 D435 相机（启用深度对齐） -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="align_depth" value="true" />
+    <arg name="enable_sync" value="true" />
+  </include>
+
+  <!-- 2. 启动 YESENSE 官方 IMU 驱动 -->
+  <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node" required="true" output="screen">
+    <param name="port" value="$(arg imu_port)" />
+    <param name="baud_rate" value="$(arg imu_baud)" />
+  </node>
+
+  <!-- 3. 启动 RTAB-Map 融合定位（使用官方 launch 文件） -->
+  <group if="$(arg enable_rtabmap)">
+    <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
+      <!-- RGB-D 相机配置 - 使用 D435 的话题 -->
+      <arg name="rgb_topic" value="/camera/color/image_raw" />
+      <arg name="depth_topic" value="/camera/aligned_depth_to_color/image_raw" />
+      <arg name="camera_info_topic" value="/camera/color/camera_info" />
+      
+      <!-- IMU 配置 - 使用官方 IMU 驱动的话题 -->
+      <arg name="imu_topic" value="/imu/data" />
+      
+      <!-- 帧配置 -->
+      <arg name="frame_id" value="camera_link" />
+      <arg name="odom_frame_id" value="odom" />
+      <arg name="map_frame_id" value="map" />
+      
+      <!-- 同步配置 -->
+      <arg name="approx_sync" value="true" />
+      <arg name="approx_sync_max_interval" value="0.05" />
+      
+      <!-- 视觉里程计 -->
+      <arg name="visual_odometry" value="true" />
+      <arg name="odom_topic" value="odom" />
+      
+      <!-- 可视化 -->
+      <arg name="rtabmap_viz" value="false" />
+      <arg name="rviz" value="false" />
+      
+      <!-- 其他参数 -->
+      <arg name="queue_size" value="20" />
+      <arg name="args" value="--delete_db_on_start" />
+    </include>
+  </group>
+</launch>
