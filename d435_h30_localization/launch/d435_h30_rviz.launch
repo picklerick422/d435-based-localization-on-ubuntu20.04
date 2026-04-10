@@ -2,6 +2,7 @@
   <!-- D435 + H30 IMU + RTAB-Map 融合定位系统（带 RViz 可视化） -->
   
   <!-- 参数配置 -->
+  <arg name="enable_imu" default="true" />
   <arg name="imu_port" default="/dev/ttyACM0" />
   <arg name="imu_baud" default="460800" />
   
@@ -12,10 +13,19 @@
   </include>
 
   <!-- 2. 启动 YESENSE 官方 IMU 驱动 -->
-  <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node" required="true" output="screen">
-    <param name="port" value="$(arg imu_port)" />
-    <param name="baud_rate" value="$(arg imu_baud)" />
-  </node>
+  <group if="$(arg enable_imu)">
+    <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node" required="true" output="screen">
+      <param name="port" value="$(arg imu_port)" />
+      <param name="baud_rate" value="$(arg imu_baud)" />
+    </node>
+  </group>
+
+  <!-- 添加静态TF变换 - 解决unknown frame问题 -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_camera"
+    args="0 0 0 0 0 0 base_link camera_link 100" />
+  
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_imu"
+    args="0 0 0 0 0 0 camera_link imu_link 100" />
 
   <!-- 3. 启动 RTAB-Map 融合定位（使用官方 launch 文件，带 RViz） -->
   <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
@@ -24,7 +34,7 @@
     <arg name="depth_topic" value="/camera/aligned_depth_to_color/image_raw" />
     <arg name="camera_info_topic" value="/camera/color/camera_info" />
     
-    <!-- IMU 配置 - 使用官方 IMU 驱动的话题 -->
+    <!-- IMU 配置 -->
     <arg name="imu_topic" value="/imu/data" />
     
     <!-- 帧配置 -->
@@ -34,18 +44,36 @@
     
     <!-- 同步配置 -->
     <arg name="approx_sync" value="true" />
-    <arg name="approx_sync_max_interval" value="0.05" />
+    <arg name="approx_sync_max_interval" value="0.5" />
     
     <!-- 视觉里程计 -->
     <arg name="visual_odometry" value="true" />
     <arg name="odom_topic" value="odom" />
     
-    <!-- 启用 RViz 可视化 -->
+    <!-- 启用 RViz 和 RTAB-Map Viz 两个可视化 -->
     <arg name="rviz" value="true" />
-    <arg name="rtabmap_viz" value="false" />
+    <arg name="rtabmap_viz" value="true" />
     
-    <!-- 其他参数 -->
+    <!-- 其他参数 - 加上我们之前的容错配置 -->
     <arg name="queue_size" value="20" />
-    <arg name="args" value="--delete_db_on_start" />
+    <arg name="args" value="--delete_db_on_start
+        --Odom/Strategy 1
+        --Odom/IMUEnabled true
+        --Odom/IMUWeight 0.7
+        --Optimizer/GravitySigma 0.01
+        --Odom/ResetOnGap false
+        --Odom/ResetOnLowInliers false
+        --Odom/FillInfoData true
+        --Odom/MinInliers 10
+        --Odom/InlierDistance 0.1
+        --Odom/RansacIterations 100
+        --Odom/IMUBufferSize 2000
+        --Odom/IMUMaxSpinUpWait 2.0
+        --Odom/IMUAngleThreshold 5.0
+        --Odom/IMUGravityVelocityThreshold 5.0
+        --Mem/IncrementalMemory true
+        --Mem/BadSignaturesIgnored true
+        --Rtabmap/DetectionRate 1
+        --Rtabmap/StartNewMapOnLoopClosure false" />
   </include>
 </launch>

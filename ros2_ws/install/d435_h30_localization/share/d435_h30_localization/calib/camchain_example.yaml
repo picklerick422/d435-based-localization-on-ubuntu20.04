@@ -1,0 +1,9 @@
+# 相机链示例文件
+# 使用 kalibr_calibrate_cameras 工具生成真实的参数
+cam0:
+  camera_model: pinhole
+  intrinsics: [615.0, 615.0, 320.0, 240.0]
+  distortion_model: radtan
+  distortion_coeffs: [0.0, 0.0, 0.0, 0.0]
+  resolution: [640, 480]
+  rostopic: /camera/color/image_raw

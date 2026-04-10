@@ -14,7 +14,6 @@ lsusb | grep RealSense
 ```
 
 **预期输出：**
-
 - `/dev/ttyACM0` (H30 IMU)
 - `Intel Corp. Intel(R) RealSense(TM) Depth Camera 435` (D435)
 
@@ -34,13 +33,12 @@ roslaunch d435_h30_localization d435_h30_rviz.launch
 ```
 
 **系统将自动启动：**
-
 - ✅ D435 深度相机
 - ✅ H30 IMU 驱动
 - ✅ RTAB-Map 融合定位算法
 - ✅ RViz 可视化界面
 
-***
+---
 
 ## 二、日常使用操作
 
@@ -54,7 +52,6 @@ rostopic list | grep -E "(imu|odom|rtabmap)"
 ```
 
 **必须看到以下话题：**
-
 - `/imu/data` - IMU 数据
 - `/rtabmap/odom` - 里程计数据
 
@@ -67,9 +64,6 @@ rostopic echo /imu/data --noarr
 
 # 查看里程计（移动小车应有变化）
 rostopic echo /rtabmap/odom --noarr
-
-#坐标
-rosrun tf tf_echo map camera_link
 ```
 
 ### 2.2 RViz 可视化操作
@@ -77,6 +71,7 @@ rosrun tf tf_echo map camera_link
 RViz 自动打开后：
 
 1. **Global Status 应显示 OK**（不是 Error）
+
 2. **添加可视化显示项**（如果未自动显示）：
    - 点击左下角 **"Add"** 按钮
    - 选择 **By topic**
@@ -84,11 +79,12 @@ RViz 自动打开后：
      - `PointCloud2` → `/rtabmap/cloud_map` （点云地图）
      - `Path` → `/rtabmap/global_path` （运动轨迹）
      - `Pose` → `/rtabmap/global_pose` （当前位姿）
+
 3. **固定坐标系设置**：
    - 左侧面板找到 **"Fixed Frame"**
    - 设置为 `map`
 
-***
+---
 
 ## 三、定位数据查看
 
@@ -100,7 +96,6 @@ rostopic echo /rtabmap/global_pose --noarr
 ```
 
 **输出示例：**
-
 ```
 header:
   seq: 1234
@@ -135,20 +130,18 @@ rostopic echo /rtabmap/odom --noarr
 rostopic echo /imu/data --noarr
 ```
 
-***
+---
 
 ## 四、常见问题处理
 
 ### 4.1 启动失败：找不到串口设备
 
 **症状：**
-
 ```
 [ERROR] Failed to open serial port /dev/ttyACM0
 ```
 
 **解决：**
-
 ```bash
 # 1. 检查 IMU 是否连接
 ls /dev/ttyACM*
@@ -165,13 +158,11 @@ roslaunch d435_h30_localization d435_h30_rviz.launch
 ### 4.2 启动失败：D435 相机无法加载
 
 **症状：**
-
 ```
 [FATAL] Failed to load nodelet realsense2_camera
 ```
 
 **解决：**
-
 ```bash
 # 1. 检查 USB 连接（必须使用 USB3.0）
 lsusb | grep RealSense
@@ -187,7 +178,6 @@ sudo reboot
 **原因：** TF 树不完整或缺少数据
 
 **解决：**
-
 ```bash
 # 在新终端中检查 TF 树
 rosrun tf view_frames
@@ -205,15 +195,18 @@ rosrun tf view_frames
    # 使用官方上位机进行陀螺零偏校准
    # 参考 H30 用户手册 3.1 节
    ```
-2. **IMU 权重参数调整**
 
+2. **IMU 权重参数调整**
+   
    编辑 launch 文件中的 IMU 权重：
    ```xml
    <!-- 在 rtabmap 配置中 -->
    <param name="Odom/IMUWeight" value="0.5" />
    ```
+   
    - 高纹理环境：调小到 `0.3`
    - 低纹理/纯白场地：调大到 `0.7`
+
 3. **时间同步问题**
    ```bash
    # 同步系统时间
@@ -237,12 +230,11 @@ rostopic hz /rtabmap/odom
 ```
 
 **如果频率过低或为 0：**
-
 - 检查硬件连接
 - 重新启动系统
 - 检查 CPU/GPU 占用率（`htop` 或 `top`）
 
-***
+---
 
 ## 五、数据录制与回放
 
@@ -270,7 +262,7 @@ rosbag record -O localization_data.bag \
 rosbag play localization_data.bag
 ```
 
-***
+---
 
 ## 六、性能优化建议
 
@@ -299,7 +291,7 @@ rosbag play localization_data.bag
 <arg name="depth_height" value="480" />
 ```
 
-***
+---
 
 ## 七、关机流程
 
@@ -324,7 +316,7 @@ rosnode kill -a
 killall -9 roslaunch roscore rviz
 ```
 
-***
+---
 
 ## 八、快速参考卡
 
@@ -339,17 +331,17 @@ killall -9 roslaunch roscore rviz
 
 ### 常用命令速查
 
-| 操作      | 命令                                                         |
-| ------- | ---------------------------------------------------------- |
-| 启动系统    | `roslaunch d435_h30_localization d435_h30_rviz.launch`     |
+| 操作 | 命令 |
+|------|------|
+| 启动系统 | `roslaunch d435_h30_localization d435_h30_rviz.launch` |
 | 仅启动 IMU | `roslaunch d435_h30_localization imu_only_official.launch` |
-| 查看话题列表  | `rostopic list \| grep -E "(imu\|odom\|rtabmap)"`          |
-| 查看位姿    | `rostopic echo /rtabmap/global_pose --noarr`               |
-| 查看里程计   | `rostopic echo /rtabmap/odom --noarr`                      |
-| 查看相机频率  | `rostopic hz /camera/color/image_raw`                      |
-| 录制数据    | `rosbag record -O test.bag /imu/data /rtabmap/odom`        |
+| 查看话题列表 | `rostopic list \| grep -E "(imu\|odom\|rtabmap)"` |
+| 查看位姿 | `rostopic echo /rtabmap/global_pose --noarr` |
+| 查看里程计 | `rostopic echo /rtabmap/odom --noarr` |
+| 查看相机频率 | `rostopic hz /camera/color/image_raw` |
+| 录制数据 | `rosbag record -O test.bag /imu/data /rtabmap/odom` |
 
-***
+---
 
 ## 九、技术支持
 
@@ -365,8 +357,8 @@ killall -9 roslaunch roscore rviz
 - D435 技术文档: `/home/picklerick/d435/Intel D435 Ubuntu20.04 全流程配置与高精度定位技术文档.md`
 - H30 用户手册: `/home/picklerick/d435/1.WHEELTEC_H30惯导模块用户手册.md`
 
-***
+---
 
-**版本**: v1.0\
-**最后更新**: 2026-04-04\
+**版本**: v1.0  
+**最后更新**: 2026-04-04  
 **适用环境**: Ubuntu 20.04 + ROS Noetic + D435 + H30 IMU

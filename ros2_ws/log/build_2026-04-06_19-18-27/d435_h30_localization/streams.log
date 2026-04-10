@@ -1,0 +1,97 @@
+[0.009s] Invoking command in '/home/picklerick/d435/ros2_ws/build/d435_h30_localization': CMAKE_PREFIX_PATH=/opt/ros/foxy PS1=\n(TraeAI-8) \w [$?] $ __trae_PS1=\n(TraeAI-8) \w [$?] $ /usr/bin/cmake /home/picklerick/d435/ros2_ws/src/d435_h30_localization -DCMAKE_INSTALL_PREFIX=/home/picklerick/d435/ros2_ws/install/d435_h30_localization
+[0.048s] -- The C compiler identification is GNU 9.4.0
+[0.089s] -- The CXX compiler identification is GNU 9.4.0
+[0.092s] -- Check for working C compiler: /usr/bin/cc
+[0.142s] -- Check for working C compiler: /usr/bin/cc -- works
+[0.143s] -- Detecting C compiler ABI info
+[0.193s] -- Detecting C compiler ABI info - done
+[0.203s] -- Detecting C compile features
+[0.203s] -- Detecting C compile features - done
+[0.205s] -- Check for working CXX compiler: /usr/bin/c++
+[0.263s] -- Check for working CXX compiler: /usr/bin/c++ -- works
+[0.264s] -- Detecting CXX compiler ABI info
+[0.324s] -- Detecting CXX compiler ABI info - done
+[0.333s] -- Detecting CXX compile features
+[0.333s] -- Detecting CXX compile features - done
+[0.335s] -- Found ament_cmake: 0.9.12 (/opt/ros/foxy/share/ament_cmake/cmake)
+[0.352s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") 
+[0.353s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[0.504s] -- Found rclcpp: 2.4.3 (/opt/ros/foxy/share/rclcpp/cmake)
+[0.540s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.545s] -- Found rosidl_adapter: 1.3.1 (/opt/ros/foxy/share/rosidl_adapter/cmake)
+[0.605s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  
+[0.631s] -- Found FastRTPS: /opt/ros/foxy/include  
+[0.692s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.735s] -- Found rmw_implementation_cmake: 1.0.4 (/opt/ros/foxy/share/rmw_implementation_cmake/cmake)
+[0.736s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.736s] -- Looking for pthread.h
+[0.787s] -- Looking for pthread.h - found
+[0.788s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[0.843s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[0.843s] -- Looking for pthread_create in pthreads
+[0.889s] -- Looking for pthread_create in pthreads - not found
+[0.889s] -- Looking for pthread_create in pthread
+[0.945s] -- Looking for pthread_create in pthread - found
+[0.947s] -- Found Threads: TRUE  
+[1.060s] -- Found rclpy: 1.0.13 (/opt/ros/foxy/share/rclpy/cmake)
+[1.061s] -- Found sensor_msgs: 2.0.5 (/opt/ros/foxy/share/sensor_msgs/cmake)
+[1.147s] -- Found nav_msgs: 2.0.5 (/opt/ros/foxy/share/nav_msgs/cmake)
+[1.200s] -- Found tf2_ros: 0.13.14 (/opt/ros/foxy/share/tf2_ros/cmake)
+[1.470s] -- Found ament_lint_auto: 0.9.8 (/opt/ros/foxy/share/ament_lint_auto/cmake)
+[1.527s] -- Added test 'copyright' to check source files copyright and LICENSE
+[1.531s] -- Added test 'flake8' to check Python code syntax and style conventions
+[1.531s] -- Added test 'lint_cmake' to check CMake code style
+[1.531s] -- Added test 'pep257' to check Python code against some of the style conventions in PEP 257
+[1.533s] -- Added test 'xmllint' to check XML markup files
+[1.536s] -- Configuring done
+[1.538s] -- Generating done
+[1.541s] -- Build files have been written to: /home/picklerick/d435/ros2_ws/build/d435_h30_localization
+[1.551s] Invoked command in '/home/picklerick/d435/ros2_ws/build/d435_h30_localization' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy PS1=\n(TraeAI-8) \w [$?] $ __trae_PS1=\n(TraeAI-8) \w [$?] $ /usr/bin/cmake /home/picklerick/d435/ros2_ws/src/d435_h30_localization -DCMAKE_INSTALL_PREFIX=/home/picklerick/d435/ros2_ws/install/d435_h30_localization
+[1.552s] Invoking command in '/home/picklerick/d435/ros2_ws/build/d435_h30_localization': CMAKE_PREFIX_PATH=/opt/ros/foxy PS1=\n(TraeAI-8) \w [$?] $ __trae_PS1=\n(TraeAI-8) \w [$?] $ /usr/bin/cmake --build /home/picklerick/d435/ros2_ws/build/d435_h30_localization -- -j8 -l8
+[1.581s] Invoked command in '/home/picklerick/d435/ros2_ws/build/d435_h30_localization' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy PS1=\n(TraeAI-8) \w [$?] $ __trae_PS1=\n(TraeAI-8) \w [$?] $ /usr/bin/cmake --build /home/picklerick/d435/ros2_ws/build/d435_h30_localization -- -j8 -l8
+[1.590s] Invoking command in '/home/picklerick/d435/ros2_ws/build/d435_h30_localization': CMAKE_PREFIX_PATH=/opt/ros/foxy PS1=\n(TraeAI-8) \w [$?] $ __trae_PS1=\n(TraeAI-8) \w [$?] $ /usr/bin/cmake --install /home/picklerick/d435/ros2_ws/build/d435_h30_localization
+[1.597s] -- Install configuration: ""
+[1.597s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/environment/pythonpath.sh
+[1.597s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/environment/pythonpath.dsv
+[1.597s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/lib/python3.8/site-packages/d435_h30_localization
+[1.597s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/lib/python3.8/site-packages/d435_h30_localization/__init__.py
+[1.619s] Listing '/home/picklerick/d435/ros2_ws/install/d435_h30_localization/lib/python3.8/site-packages/d435_h30_localization'...
+[1.619s] Compiling '/home/picklerick/d435/ros2_ws/install/d435_h30_localization/lib/python3.8/site-packages/d435_h30_localization/__init__.py'...
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/lib/d435_h30_localization/h30_imu_driver.py
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/lib/d435_h30_localization/h30_imu_driver_debug.py
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/d435_h30_rviz.launch.py
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/imu_only_official.launch
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/imu_debug.launch.py
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/imu_with_rviz.launch.py
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/d435_h30_cad.launch
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/imu_only_simple.launch.py
+[1.622s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/imu_only.launch.py
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/d435_h30_rviz.launch
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/imu_only.launch
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/d435_h30.launch.py
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/d435_h30.launch
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/d435_h30_official.launch
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/launch/d435_h30_full.launch
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/calib
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/calib/imu_calib_example.yaml
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/calib/camchain_example.yaml
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/calib/aprilgrid_6x8_20mm.yaml
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/rviz
+[1.623s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/rviz/imu.rviz
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/ament_index/resource_index/package_run_dependencies/d435_h30_localization
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/ament_index/resource_index/parent_prefix_path/d435_h30_localization
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/environment/ament_prefix_path.sh
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/environment/ament_prefix_path.dsv
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/environment/path.sh
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/environment/path.dsv
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/local_setup.bash
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/local_setup.sh
+[1.624s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/local_setup.zsh
+[1.625s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/local_setup.dsv
+[1.625s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/package.dsv
+[1.625s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/ament_index/resource_index/packages/d435_h30_localization
+[1.625s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/cmake/d435_h30_localizationConfig.cmake
+[1.625s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/cmake/d435_h30_localizationConfig-version.cmake
+[1.625s] -- Installing: /home/picklerick/d435/ros2_ws/install/d435_h30_localization/share/d435_h30_localization/package.xml
+[1.627s] Invoked command in '/home/picklerick/d435/ros2_ws/build/d435_h30_localization' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy PS1=\n(TraeAI-8) \w [$?] $ __trae_PS1=\n(TraeAI-8) \w [$?] $ /usr/bin/cmake --install /home/picklerick/d435/ros2_ws/build/d435_h30_localization

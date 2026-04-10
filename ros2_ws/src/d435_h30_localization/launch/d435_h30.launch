@@ -59,8 +59,6 @@
       <!-- 视觉里程计 -->
       <arg name="visual_odometry" value="true" />
       <arg name="odom_topic" value="odom" />
-      <arg name="publish_tf" value="true" />
-      <arg name="subscribe_scan" value="false" />
       
       <!-- 可视化 -->
       <arg name="rtabmap_viz" value="true" />

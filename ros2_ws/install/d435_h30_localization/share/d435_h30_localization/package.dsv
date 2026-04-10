@@ -1,0 +1,11 @@
+source;share/d435_h30_localization/hook/cmake_prefix_path.ps1
+source;share/d435_h30_localization/hook/cmake_prefix_path.dsv
+source;share/d435_h30_localization/hook/cmake_prefix_path.sh
+source;share/d435_h30_localization/hook/pythonpath.ps1
+source;share/d435_h30_localization/hook/pythonpath.dsv
+source;share/d435_h30_localization/hook/pythonpath.sh
+source;share/d435_h30_localization/local_setup.bash
+source;share/d435_h30_localization/local_setup.dsv
+source;share/d435_h30_localization/local_setup.ps1
+source;share/d435_h30_localization/local_setup.sh
+source;share/d435_h30_localization/local_setup.zsh

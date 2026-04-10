@@ -1,0 +1,3 @@
+source;share/d435_h30_localization/environment/ament_prefix_path.sh
+source;share/d435_h30_localization/environment/path.sh
+source;share/d435_h30_localization/environment/pythonpath.sh

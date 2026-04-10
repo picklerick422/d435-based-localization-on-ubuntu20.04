@@ -1,0 +1,11 @@
+<launch>
+  <!-- IMU 参数配置 -->
+  <arg name="imu_port" default="/dev/ttyACM0" />
+  <arg name="imu_baud" default="460800" />
+
+  <!-- 启动内置的 H30 IMU 驱动 -->
+  <node name="h30_imu_driver" pkg="d435_h30_localization" type="h30_imu_driver.py" output="screen">
+    <param name="serial_port" value="$(arg imu_port)" />
+    <param name="baud_rate" value="$(arg imu_baud)" />
+  </node>
+</launch>
