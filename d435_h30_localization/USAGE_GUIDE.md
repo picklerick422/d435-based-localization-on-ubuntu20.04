@@ -31,6 +31,62 @@ sudo chmod 777 /dev/ttyACM0
 cd ~/catkin_ws
 source devel/setup.bash
 roslaunch d435_h30_localization d435_h30_rviz.launch
+
+roslaunch d435_h30_localization d435_imu.launch \
+  send_to_stm32:=true \
+  imu_port:=/dev/ttyACM0 \
+  stm32_port:=/dev/ttyACM1
+
+
+# 默认打开双可视化
+roslaunch d435_h30_localization camera_only.launch
+# 或者只打开 RViz
+roslaunch d435_h30_localization camera_only.launch rviz:=true rtabmap_viz:=false
+# 或者只打开 rtabmapviz
+roslaunch d435_h30_localization camera_only.launch rviz:=false rtabmap_viz:=true
+# 或者关闭所有可视化（后台运行）
+roslaunch d435_h30_localization camera_only.launch rviz:=false rtabmap_viz:=false
+# 传输到STM32（自动检测串口）
+roslaunch d435_h30_localization camera_only.launch send_to_stm32:=true
+# 传输到STM32（指定串口和波特率）
+roslaunch d435_h30_localization camera_only.launch \
+  send_to_stm32:=true \
+  stm32_port:=/dev/ttyUSB0 \
+  stm32_baudrate:=115200
+
+
+roslaunch d435_h30_localization imu_only.launch
+# 默认打开 RViz
+roslaunch d435_h30_localization imu_only.launch
+# 或者关闭 RViz
+roslaunch d435_h30_localization imu_only.launch rviz:=false
+
+
+roslaunch d435_h30_localization d435_imu.launch
+# 默认打开双可视化
+roslaunch d435_h30_localization d435_imu.launch
+# 或者自定义可视化
+roslaunch d435_h30_localization d435_imu.launch rviz:=true rtabmap_viz:=false
+# 传输到STM32（自动检测串口）
+roslaunch d435_h30_localization d435_imu.launch send_to_stm32:=true
+# 完整配置
+roslaunch d435_h30_localization d435_imu.launch \
+  send_to_stm32:=true \
+  stm32_port:=/dev/ttyUSB0 \
+  stm32_baudrate:=115200 \
+  stm32_format:=cm_deg \
+  stm32_rate:=10.0
+
+
+roslaunch d435_h30_localization d435_imu_cad.launch
+# 默认打开双可视化
+roslaunch d435_h30_localization d435_imu_cad.launch
+# 或者自定义可视化和CAD路径
+roslaunch d435_h30_localization d435_imu_cad.launch \
+  cad_map_path:=/path/to/map.ply \
+  rviz:=true \
+  rtabmap_viz:=true
+
 ```
 
 **系统将自动启动：**
@@ -67,6 +123,8 @@ rostopic echo /imu/data --noarr
 
 # 查看里程计（移动小车应有变化）
 rostopic echo /rtabmap/odom --noarr
+
+rostopic echo /rtabmap/localization_pose --noarr
 
 #坐标
 rosrun tf tf_echo map camera_link
