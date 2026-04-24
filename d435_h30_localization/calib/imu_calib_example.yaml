@@ -1,9 +1,0 @@
-# IMU内参标定示例文件
-# 使用 imu_calib 工具生成真实的标定参数
-imu_rate: 100.0
-accelerometer_noise_density: 0.001
-accelerometer_random_walk: 0.0001
-gyroscope_noise_density: 0.0001
-gyroscope_random_walk: 1.0e-05
-accelerometer_bias: [0.0, 0.0, 0.0]
-gyroscope_bias: [0.0, 0.0, 0.0]
