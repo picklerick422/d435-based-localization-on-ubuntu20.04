@@ -9,7 +9,7 @@
   <arg name="enable_imu" default="true" />
   <arg name="imu_port" default="/dev/ttyACM0" />
   <arg name="imu_baud" default="460800" />
-  <arg name="rviz" default="true" />
+  <arg name="rviz" default="false" />
   <arg name="rtabmap_viz" default="true" />
   
   <!-- 位姿传输到STM32参数 -->
@@ -18,6 +18,9 @@
   <arg name="stm32_baudrate" default="115200" />
   <arg name="stm32_format" default="cm_deg" />
   <arg name="stm32_rate" default="10.0" />
+  
+  <!-- 串口助手参数 -->
+  <arg name="serial_assistant" default="true" />
   
   <!-- 1. 启动 D435 相机（启用深度对齐） -->
   <include file="$(find realsense2_camera)/launch/rs_camera.launch">
@@ -99,5 +102,11 @@
       <param name="format" value="$(arg stm32_format)" />
       <param name="send_rate" value="$(arg stm32_rate)" />
     </node>
+  </group>
+  
+  <!-- 5. 串口助手（可选） -->
+  <group if="$(arg serial_assistant)">
+    <node pkg="d435_h30_localization" type="serial_assistant.py" 
+          name="serial_assistant" output="screen" />
   </group>
 </launch>

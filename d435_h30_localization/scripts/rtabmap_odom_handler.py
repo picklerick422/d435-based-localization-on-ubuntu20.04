@@ -1,9 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import rospy
 import serial
 import glob
-from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import String
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 
@@ -11,6 +12,8 @@ class RTABMapPoseToSTM32:
     def __init__(self):
         # 串口初始化（自动检测可用端口）
         self.ser = self._init_serial()
+        # ROS发布者（用于串口助手显示）
+        self.data_pub = rospy.Publisher('/rtabmap/serial_data', String, queue_size=10)
         # ROS订阅初始化 - 支持两种定位话题
         self.pose_sub = None
         self.odom_sub = None
@@ -31,7 +34,7 @@ class RTABMapPoseToSTM32:
         # 优先用 localization_pose（全局定位）
         if '/rtabmap/localization_pose' in topic_names:
             rospy.loginfo("使用话题: /rtabmap/localization_pose")
-            self.pose_sub = rospy.Subscriber('/rtabmap/localization_pose', PoseStamped, self.pose_callback)
+            self.pose_sub = rospy.Subscriber('/rtabmap/localization_pose', PoseWithCovarianceStamped, self.pose_callback)
         elif '/rtabmap/odom' in topic_names:
             rospy.loginfo("使用话题: /rtabmap/odom")
             self.odom_sub = rospy.Subscriber('/rtabmap/odom', Odometry, self.odom_callback)
@@ -102,24 +105,26 @@ class RTABMapPoseToSTM32:
         try:
             self.ser.write(data_str.encode('utf-8'))
             self.last_send_time = rospy.Time.now()
+            # 同时发布到ROS话题（用于串口助手显示）
+            self.data_pub.publish(data_str.strip())
             # 同时打印到终端（方便调试）
-            rospy.loginfo(f"发送数据: {data_str.strip()}")
+            rospy.loginfo("发送数据: {}".format(data_str.strip()))
         except serial.SerialTimeoutException:
             rospy.logwarn("串口发送超时，尝试重新连接...")
             self.ser = self._init_serial()  # 自动重连
         except serial.SerialException as e:
-            rospy.logerr(f"串口错误: {str(e)}，尝试重新连接...")
+            rospy.logerr("串口错误: {}，尝试重新连接...".format(str(e)))
             try:
                 self.ser = self._init_serial()
             except:
                 pass
     
     def pose_callback(self, msg):
-        """PoseStamped 回调（来自 localization_pose）"""
+        """PoseWithCovarianceStamped 回调（来自 localization_pose）"""
         # 提取位置
-        pos = msg.pose.position
+        pos = msg.pose.pose.position
         # 提取四元数并转换为欧拉角
-        q = msg.pose.orientation
+        q = msg.pose.pose.orientation
         quaternion = [q.x, q.y, q.z, q.w]
         roll, pitch, yaw = euler_from_quaternion(quaternion)
         
