@@ -1,24 +1,39 @@
 #!/bin/bash
-# 一键启动定位系统（带串口监控）
+# 一键启动定位系统（带串口监控 + 自动串口检测）
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+echo "=== 串口自动检测 ==="
+cd "$SCRIPT_DIR"
+
+# 运行串口检测（source 让变量传回当前 shell）
+source "$SCRIPT_DIR/detect_serials.sh"
+
+echo ""
+echo "最终使用:"
+echo "  IMU 端口:    $IMU_PORT"
+echo "  STM32 端口:  $STM32_PORT"
+echo ""
+
 cd "$SCRIPT_DIR/catkin_ws"
 source devel/setup.bash
 
 echo "=== 启动定位系统 ==="
 echo ""
 
-# 启动定位系统（后台运行）
-roslaunch d435_h30_localization d435_imu.launch send_to_stm32:=true &
+# 启动定位系统（使用检测到的端口）
+roslaunch d435_h30_localization d435_imu.launch \
+    send_to_stm32:=true \
+    imu_port:="$IMU_PORT" \
+    stm32_port:="$STM32_PORT" &
 LAUNCH_PID=$!
 
 echo "主系统已启动 (PID: $LAUNCH_PID)"
 echo ""
 
-# 等待 ROS 启动
 sleep 3
 
-# 启动 TX 监控终端 (通过ROS话题，不占用串口)
+# 启动 TX 监控终端
 gnome-terminal --title="STM32 TX 监控" --geometry=100x25+0+0 -- bash -c "
     source '$SCRIPT_DIR/catkin_ws/devel/setup.bash'
     echo '📤 TX 监控 - 显示发送到 STM32 的原始数据'
@@ -27,7 +42,7 @@ gnome-terminal --title="STM32 TX 监控" --geometry=100x25+0+0 -- bash -c "
     rosrun d435_h30_localization serial_monitor.py --mode tx
 " &
 
-# 启动 RX 监控终端 (直接读串口，自动检测)
+# 启动 RX 监控终端
 gnome-terminal --title="STM32 RX 监控" --geometry=100x25+520+0 -- bash -c "
     source '$SCRIPT_DIR/catkin_ws/devel/setup.bash'
     echo '📥 RX 监控 - 显示从 STM32 接收的数据'
@@ -37,10 +52,9 @@ gnome-terminal --title="STM32 RX 监控" --geometry=100x25+520+0 -- bash -c "
 " &
 
 echo "✓ 已启动两个监控终端！"
-echo "  - 左侧窗口: TX (发送) 监控 - 显示原始 coor:x,y,r 格式"
-echo "  - 右侧窗口: RX (接收) 监控 - 自动检测 STM32 串口"
+echo "  - 左侧窗口: TX (发送) 监控"
+echo "  - 右侧窗口: RX (接收) 监控"
 echo ""
 echo "按 Ctrl+C 停止所有进程"
 
-# 等待主进程
 wait $LAUNCH_PID
