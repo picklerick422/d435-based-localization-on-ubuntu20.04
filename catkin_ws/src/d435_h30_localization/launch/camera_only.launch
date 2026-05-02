@@ -6,6 +6,11 @@
   <arg name="rtabmap_viz"     default="true" />
   <arg name="use_camera"      default="true" />
 
+  <!-- 地图加载参数 -->
+  <arg name="db_path"         default="$(env HOME)/.ros/rtabmap.db" />
+  <arg name="localization"    default="false" />
+  <arg name="db_arg"          default="" />
+
   <!-- 位姿传输到 STM32 参数 -->
   <arg name="send_to_stm32"   default="false" />
   <arg name="stm32_port"      default="" />
@@ -13,13 +18,13 @@
   <arg name="stm32_format"    default="cm_deg" />
   <arg name="stm32_rate"      default="50.0" />
 
-  <!-- 相机参数（默认低分辨率 + 后处理） -->
-  <arg name="depth_width"     default="640" />
+  <!-- 相机参数（848x480 @ 60fps；需 USB3 + D435 固件 5.15+） -->
+  <arg name="depth_width"     default="848" />
   <arg name="depth_height"    default="480" />
-  <arg name="depth_fps"       default="30" />
-  <arg name="color_width"     default="640" />
+  <arg name="depth_fps"       default="60" />
+  <arg name="color_width"     default="848" />
   <arg name="color_height"    default="480" />
-  <arg name="color_fps"       default="30" />
+  <arg name="color_fps"       default="60" />
   <arg name="d435_filters"    default="decimation,spatial,temporal" />
   <arg name="d435_json"       default="" />
 
@@ -65,11 +70,12 @@
     <arg name="odom_topic"            value="odom" />
     <arg name="rtabmap_viz"           value="$(arg rtabmap_viz)" />
     <arg name="rviz"                  value="$(arg rviz)" />
+    <arg name="database_path"         value="$(arg db_path)" />
+    <arg name="localization"          value="$(arg localization)" />
 
-    <arg name="args" value="--delete_db_on_start
+    <arg name="args" value="$(arg db_arg)
         --Rtabmap/DetectionRate 2
         --Rtabmap/TimeThr 300
-        --Mem/IncrementalMemory true
         --Mem/BadSignaturesIgnored true
         --Reg/Force3DoF true
         --Reg/Strategy 0
