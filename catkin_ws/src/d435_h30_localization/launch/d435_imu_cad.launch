@@ -1,0 +1,114 @@
+<launch>
+  <!--
+    D435 + (可选) IMU + CAD 模型 GICP 直接定位
+
+    使用方法:
+      roslaunch d435_h30_localization d435_imu_cad.launch \
+        cad_path:=/path/to/cad_map.ply send_to_stm32:=true
+
+    工作流程:
+      1. D435 相机 (启用点云滤波器, 输出 /camera/depth/color/points)
+      2. (可选) YESENSE IMU 驱动 (用于姿态参考, 当前 ICP 节点未直接耦合)
+      3. cad_icp_localizer.py: 加载 CAD .ply -> 体素 + 法线
+                                D435 点云每帧降采样 -> GICP 对齐 CAD
+                                输出 /cad_pose (PoseWithCovarianceStamped, map 帧)
+                                可选发布 map -> base_link TF
+      4. (可选) rtabmap_odom_handler.py 把 /cad_pose 转发到 STM32
+
+    依赖:
+      pip install open3d
+  -->
+
+  <!-- 基本参数 -->
+  <arg name="cad_path" default="/home/picklerick/race_track/cad_map.ply" />
+  <arg name="enable_imu" default="true" />
+  <arg name="imu_port" default="/dev/ttyACM0" />
+  <arg name="imu_baud" default="460800" />
+  <arg name="rviz" default="false" />
+
+  <!-- ICP 参数 -->
+  <arg name="icp_rate" default="5.0" />
+  <arg name="voxel_size" default="0.05" />
+  <arg name="max_correspondence_distance" default="0.2" />
+  <arg name="min_fitness" default="0.3" />
+  <arg name="publish_tf" default="true" />
+  <arg name="initial_x" default="0.0" />
+  <arg name="initial_y" default="0.0" />
+  <arg name="initial_z" default="0.0" />
+  <arg name="initial_yaw" default="0.0" />
+  <arg name="cad_scale" default="1.0" />
+  <arg name="cad_axis_remap" default="xyz" />
+
+  <!-- STM32 转发参数 -->
+  <arg name="send_to_stm32" default="false" />
+  <arg name="stm32_port" default="" />
+  <arg name="stm32_baudrate" default="115200" />
+  <arg name="stm32_format" default="cm_deg" />
+  <arg name="stm32_rate" default="50.0" />
+
+  <!-- 1. D435 相机 (启用 pointcloud 滤波器以输出 /camera/depth/color/points) -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="depth_width" value="848" />
+    <arg name="depth_height" value="480" />
+    <arg name="depth_fps" value="30" />
+    <arg name="color_width" value="848" />
+    <arg name="color_height" value="480" />
+    <arg name="color_fps" value="30" />
+    <arg name="align_depth" value="true" />
+    <arg name="enable_sync" value="true" />
+    <arg name="filters" value="pointcloud" />
+  </include>
+
+  <!-- 2. YESENSE IMU (可选) -->
+  <group if="$(arg enable_imu)">
+    <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node"
+          required="true" output="screen">
+      <param name="port" value="$(arg imu_port)" />
+      <param name="baud_rate" value="$(arg imu_baud)" />
+    </node>
+  </group>
+
+  <!-- 3. 静态 TF (base_link <-> camera_link, camera_link <-> imu_link)
+       注意: tf2_ros static_transform_publisher 不接受周期参数,
+       只用 8 参数: x y z yaw pitch roll parent child -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_camera"
+        args="0 0 0 0 0 0 base_link camera_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_imu"
+        args="0 0 0 0 0 0 camera_link imu_link" />
+
+  <!-- 4. CAD GICP 定位节点 (required=false: CAD 缺失时不拖死整个 launch) -->
+  <node pkg="d435_h30_localization" type="cad_icp_localizer.py"
+        name="cad_icp_localizer" output="screen" required="false">
+    <param name="cad_path" value="$(arg cad_path)" />
+    <param name="cad_scale" value="$(arg cad_scale)" />
+    <param name="cad_axis_remap" value="$(arg cad_axis_remap)" />
+    <param name="point_cloud_topic" value="/camera/depth/color/points" />
+    <param name="camera_frame" value="camera_color_optical_frame" />
+    <param name="map_frame" value="map" />
+    <param name="base_frame" value="base_link" />
+    <param name="icp_rate" value="$(arg icp_rate)" />
+    <param name="voxel_size" value="$(arg voxel_size)" />
+    <param name="max_correspondence_distance" value="$(arg max_correspondence_distance)" />
+    <param name="min_fitness" value="$(arg min_fitness)" />
+    <param name="publish_tf" value="$(arg publish_tf)" />
+    <param name="initial_x" value="$(arg initial_x)" />
+    <param name="initial_y" value="$(arg initial_y)" />
+    <param name="initial_z" value="$(arg initial_z)" />
+    <param name="initial_yaw" value="$(arg initial_yaw)" />
+  </node>
+
+  <!-- 5. STM32 转发 (订阅 /cad_pose) -->
+  <group if="$(arg send_to_stm32)">
+    <node pkg="d435_h30_localization" type="rtabmap_odom_handler.py"
+          name="cad_pose_to_stm32" output="screen">
+      <param name="port" value="$(arg stm32_port)" />
+      <param name="baudrate" value="$(arg stm32_baudrate)" />
+      <param name="format" value="$(arg stm32_format)" />
+      <param name="send_rate" value="$(arg stm32_rate)" />
+      <param name="pose_topic" value="/cad_pose" />
+    </node>
+  </group>
+
+  <!-- 6. RViz (可选) -->
+  <node name="rviz" pkg="rviz" type="rviz" if="$(arg rviz)" />
+</launch>

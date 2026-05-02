@@ -1,0 +1,59 @@
+# D435 race track 场景调优参数 (赛道环境：弱纹理黑地胶 / 快速运动)
+#
+# 用途:
+#   1. 关闭 RGB 自动曝光 -> 帧间特征位置稳定 -> 视觉里程计更稳
+#   2. 固定较短曝光     -> 抗运动模糊 (高速转向时仍可见角点)
+#   3. 提高激光发射功率 -> 弱纹理表面 (黑地胶/白墙) 仍能拿到稠密深度
+#   4. 关闭红外自动曝光 -> 深度帧率稳定，避免与 RGB 异步抖动
+#
+# 加载方式:
+#   方式 A (推荐): 通过 rs_camera.launch 的 json_file_path 加载 d435_race_track.json (硬件高级模式)
+#   方式 B: 启动后用 dynamic_reconfigure 应用本 YAML 中的参数
+#         rosrun dynamic_reconfigure dynparam load /camera/rgb_camera config/d435_race_track.yaml
+#         rosrun dynamic_reconfigure dynparam load /camera/stereo_module config/d435_race_track.yaml
+#
+# 调试技巧:
+#   - 黑地胶环境 -> 把 laser_power 拉到 300 上限附近
+#   - 强日光环境 -> 缩短 exposure 至 3000us 抑制饱和
+#   - 仍可见运动模糊 -> 进一步把 exposure 降到 2000us、提高 gain 到 64
+
+# ----- RGB 流 (rgb_camera dynparam) -----
+rgb_camera:
+  enable_auto_exposure: false      # 关掉自动曝光，避免帧间亮度跳变
+  exposure: 78                     # 单位 100us -> 7.8ms (室内日光灯)
+  gain: 64                         # 与 exposure 平衡，足够亮但不过曝
+  enable_auto_white_balance: true  # 白平衡仍然自动 (颜色不影响特征点)
+  power_line_frequency: 3          # 3=Auto / 1=50Hz / 2=60Hz (中国电网建议 1)
+  backlight_compensation: 0
+  brightness: 0
+  contrast: 50
+  saturation: 64
+  sharpness: 50
+  gamma: 300
+  hue: 0
+  frames_queue_size: 1             # 关键：降低队列延迟
+
+# ----- 深度流 (stereo_module dynparam) -----
+stereo_module:
+  enable_auto_exposure: false      # 关掉自动曝光（红外）
+  exposure: 5000                   # 5ms (高速运动下平衡 SNR 与运动模糊)
+  gain: 16                         # 默认 16，够用
+  laser_power: 240                 # 0..360, 越高越能照亮弱纹理表面
+  emitter_enabled: 1               # 1=on (D435 主动 IR 投影器)
+  emitter_on_off: false            # false=持续投影 (true 是隔帧)
+  output_trigger_enabled: false
+  visual_preset: 3                 # 3=High Accuracy (优先准确率)
+  frames_queue_size: 1             # 关键：降低队列延迟
+  error_polling_enabled: false
+  global_time_enabled: true        # 时间戳与 host 对齐 (改善多传感器同步)
+
+# ----- 后处理滤波 (rs_camera.launch filters arg) -----
+# 已在 launch 中通过 d435_filters 传入 "decimation,spatial,temporal"
+# 各 filter 的细节参数可由 dynamic_reconfigure 进一步调:
+#   /camera/decimation  filter_magnitude=2
+#   /camera/spatial     filter_magnitude=2  smooth_alpha=0.5  smooth_delta=20  holes_fill=0
+#   /camera/temporal    filter_smooth_alpha=0.4  filter_smooth_delta=20  holes_fill=3
+
+# ----- 帧时间戳 -----
+# 全局时钟启用后, 帧时间戳来自硬件时间戳 + host 偏移校正
+# 这对 RTAB-Map approx_sync_max_interval=0.02s 至关重要

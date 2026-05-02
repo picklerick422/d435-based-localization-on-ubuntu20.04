@@ -1,0 +1,106 @@
+<launch>
+  <!-- D435 + H30(YESENSE) IMU + RTAB-Map 融合定位（精简版/性能优化）
+
+       与 d435_imu.launch 的区别：
+       - 默认不启动 RViz/RTAB-MapViz
+       - 默认不启动 STM32 发送节点
+       - 适合后台/纯定位测试
+
+       核心优化与 d435_imu.launch 一致：
+       queue_size=5, approx_sync_max_interval=0.02s,
+       frame_id=base_link, 640×480@30fps,
+       Reg/Force3DoF=true, Odom/Strategy=0(F2M), DetectionRate=2 -->
+
+  <!-- 通用参数 -->
+  <arg name="enable_rtabmap"  default="true" />
+  <arg name="imu_port"        default="/dev/ttyACM0" />
+  <arg name="imu_baud"        default="460800" />
+
+  <!-- 相机参数（默认低分辨率 + 后处理） -->
+  <arg name="depth_width"     default="640" />
+  <arg name="depth_height"    default="480" />
+  <arg name="depth_fps"       default="30" />
+  <arg name="color_width"     default="640" />
+  <arg name="color_height"    default="480" />
+  <arg name="color_fps"       default="30" />
+  <arg name="d435_filters"    default="decimation,spatial,temporal" />
+  <arg name="d435_json"       default="" />
+
+  <!-- 1. D435 相机 -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="depth_width"     value="$(arg depth_width)" />
+    <arg name="depth_height"    value="$(arg depth_height)" />
+    <arg name="depth_fps"       value="$(arg depth_fps)" />
+    <arg name="infra_width"     value="$(arg depth_width)" />
+    <arg name="infra_height"    value="$(arg depth_height)" />
+    <arg name="infra_fps"       value="$(arg depth_fps)" />
+    <arg name="color_width"     value="$(arg color_width)" />
+    <arg name="color_height"    value="$(arg color_height)" />
+    <arg name="color_fps"       value="$(arg color_fps)" />
+    <arg name="align_depth"     value="true" />
+    <arg name="enable_sync"     value="true" />
+    <arg name="filters"         value="$(arg d435_filters)" />
+    <arg name="json_file_path"  value="$(arg d435_json)" />
+  </include>
+
+  <!-- 2. YESENSE IMU 驱动 -->
+  <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node"
+        required="true" output="screen">
+    <param name="port"      value="$(arg imu_port)" />
+    <param name="baud_rate" value="$(arg imu_baud)" />
+  </node>
+
+  <!-- 静态 TF -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_camera"
+        args="0 0 0 0 0 0 base_link camera_link 100" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_imu"
+        args="0 0 0 0 0 0 camera_link imu_link 100" />
+
+  <!-- 3. RTAB-Map -->
+  <group if="$(arg enable_rtabmap)">
+    <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
+      <arg name="rgb_topic"             value="/camera/color/image_raw" />
+      <arg name="depth_topic"           value="/camera/aligned_depth_to_color/image_raw" />
+      <arg name="camera_info_topic"     value="/camera/color/camera_info" />
+      <arg name="imu_topic"             value="/imu/data" />
+
+      <arg name="frame_id"              value="base_link" />
+      <arg name="odom_frame_id"         value="odom" />
+      <arg name="map_frame_id"          value="map" />
+
+      <arg name="approx_sync"             value="true" />
+      <arg name="approx_sync_max_interval" value="0.02" />
+      <arg name="topic_queue_size"        value="1" />
+      <arg name="queue_size"              value="5" />
+      <arg name="wait_for_transform"      value="0.1" />
+
+      <arg name="visual_odometry"       value="true" />
+      <arg name="odom_topic"            value="odom" />
+      <arg name="rtabmap_viz"           value="false" />
+      <arg name="rviz"                  value="false" />
+
+      <arg name="args" value="--delete_db_on_start
+          --Rtabmap/DetectionRate 2
+          --Rtabmap/TimeThr 300
+          --Mem/IncrementalMemory true
+          --Mem/BadSignaturesIgnored true
+          --Mem/RehearsalSimilarity 0.30
+          --Reg/Force3DoF true
+          --Reg/Strategy 0
+          --Kp/DetectorStrategy 8
+          --Kp/MaxFeatures 400" />
+
+      <arg name="odom_args" value="
+          --Odom/Strategy 0
+          --Odom/ResetCountdown 1
+          --Odom/FilteringStrategy 1
+          --Odom/IMUEnabled true
+          --Odom/IMUWeight 0.5
+          --Odom/IMUBufferSize 2000
+          --Odom/MinInliers 10
+          --OdomF2M/MaxSize 1000
+          --Vis/MinInliers 10
+          --Optimizer/GravitySigma 0.01" />
+    </include>
+  </group>
+</launch>

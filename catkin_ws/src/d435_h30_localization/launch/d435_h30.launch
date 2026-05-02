@@ -1,0 +1,49 @@
+<launch>
+  <!-- D435 + H30 IMU 简单定位（无 RTAB-Map）
+
+       仅启动 D435 相机 + H30 IMU 驱动 + 基础 TF。
+       适合传感器单独调试。生产用 d435_imu.launch。 -->
+
+  <arg name="enable_imu"      default="true" />
+  <arg name="use_wit_node"    default="false" />
+  <arg name="imu_port"        default="/dev/ttyACM0" />
+  <arg name="imu_baud"        default="460800" />
+
+  <arg name="depth_width"     default="640" />
+  <arg name="depth_height"    default="480" />
+  <arg name="depth_fps"       default="30" />
+  <arg name="color_width"     default="640" />
+  <arg name="color_height"    default="480" />
+  <arg name="color_fps"       default="30" />
+
+  <!-- 1. D435 相机 -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="depth_width"     value="$(arg depth_width)" />
+    <arg name="depth_height"    value="$(arg depth_height)" />
+    <arg name="depth_fps"       value="$(arg depth_fps)" />
+    <arg name="color_width"     value="$(arg color_width)" />
+    <arg name="color_height"    value="$(arg color_height)" />
+    <arg name="color_fps"       value="$(arg color_fps)" />
+    <arg name="align_depth"     value="true" />
+    <arg name="enable_sync"     value="true" />
+  </include>
+
+  <!-- 2. H30 IMU 驱动 -->
+  <group if="$(arg enable_imu)">
+    <group if="$(arg use_wit_node)">
+      <include file="$(find wit_node)/launch/wit_imu.launch" />
+    </group>
+    <group unless="$(arg use_wit_node)">
+      <node name="h30_imu_driver" pkg="d435_h30_localization" type="h30_imu_driver.py" output="screen">
+        <param name="serial_port" value="$(arg imu_port)" />
+        <param name="baud_rate"   value="$(arg imu_baud)" />
+      </node>
+    </group>
+  </group>
+
+  <!-- 静态 TF -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_camera"
+        args="0 0 0 0 0 0 base_link camera_link 100" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_imu"
+        args="0 0 0 0 0 0 camera_link imu_link 100" />
+</launch>

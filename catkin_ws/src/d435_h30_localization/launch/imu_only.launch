@@ -1,0 +1,21 @@
+<launch>
+  <!-- 只启动 IMU（使用官方 YESENSE 驱动） -->
+  
+  使用方法:
+    roslaunch d435_h30_localization imu_only.launch [rviz:=true]
+  -->
+  
+  <!-- 参数配置 -->
+  <arg name="imu_port" default="/dev/ttyACM0" />
+  <arg name="imu_baud" default="460800" />
+  <arg name="rviz" default="true" />
+
+  <!-- 启动 YESENSE 官方 IMU 驱动 -->
+  <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node" required="true" output="screen">
+    <param name="port" value="$(arg imu_port)" />
+    <param name="baud_rate" value="$(arg imu_baud)" />
+  </node>
+
+  <!-- 启动 RViz 可视化（可选） -->
+  <node name="rviz" pkg="rviz" type="rviz" if="$(arg rviz)" />
+</launch>

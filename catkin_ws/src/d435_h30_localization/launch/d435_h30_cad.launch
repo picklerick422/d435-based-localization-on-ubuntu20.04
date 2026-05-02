@@ -1,0 +1,24 @@
+<launch>
+  <!-- D435 + IMU + CAD 模型先验融合定位（精简版）
+
+       这是 d435_imu_cad.launch 的轻量包装：默认参数，无可视化。
+       推荐直接使用 d435_imu_cad.launch 以获取完整参数控制。 -->
+
+  <arg name="enable_imu"      default="true" />
+  <arg name="imu_port"        default="/dev/ttyACM0" />
+  <arg name="imu_baud"        default="460800" />
+  <arg name="db_path"         default="$(env HOME)/race_track/prior.db" />
+  <arg name="initial_pose"    default="" />
+  <arg name="send_to_stm32"   default="false" />
+
+  <include file="$(find d435_h30_localization)/launch/d435_imu_cad.launch">
+    <arg name="enable_imu"      value="$(arg enable_imu)" />
+    <arg name="imu_port"        value="$(arg imu_port)" />
+    <arg name="imu_baud"        value="$(arg imu_baud)" />
+    <arg name="db_path"         value="$(arg db_path)" />
+    <arg name="initial_pose"    value="$(arg initial_pose)" />
+    <arg name="rviz"            value="false" />
+    <arg name="rtabmap_viz"     value="false" />
+    <arg name="send_to_stm32"   value="$(arg send_to_stm32)" />
+  </include>
+</launch>

@@ -1,0 +1,96 @@
+<launch>
+  <!-- D435 相机定位 (纯视觉, 不用 IMU)
+       与 d435_h30_rviz.launch 保持一致, 仅去掉 IMU 相关 -->
+
+  <arg name="rviz"            default="false" />
+  <arg name="rtabmap_viz"     default="true" />
+  <arg name="use_camera"      default="true" />
+
+  <!-- 位姿传输到 STM32 参数 -->
+  <arg name="send_to_stm32"   default="false" />
+  <arg name="stm32_port"      default="" />
+  <arg name="stm32_baudrate"  default="115200" />
+  <arg name="stm32_format"    default="cm_deg" />
+  <arg name="stm32_rate"      default="50.0" />
+
+  <!-- 相机参数（默认低分辨率 + 后处理） -->
+  <arg name="depth_width"     default="640" />
+  <arg name="depth_height"    default="480" />
+  <arg name="depth_fps"       default="30" />
+  <arg name="color_width"     default="640" />
+  <arg name="color_height"    default="480" />
+  <arg name="color_fps"       default="30" />
+  <arg name="d435_filters"    default="decimation,spatial,temporal" />
+  <arg name="d435_json"       default="" />
+
+  <!-- 1. D435 相机 -->
+  <group if="$(arg use_camera)">
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+      <arg name="depth_width"     value="$(arg depth_width)" />
+      <arg name="depth_height"    value="$(arg depth_height)" />
+      <arg name="depth_fps"       value="$(arg depth_fps)" />
+      <arg name="infra_width"     value="$(arg depth_width)" />
+      <arg name="infra_height"    value="$(arg depth_height)" />
+      <arg name="infra_fps"       value="$(arg depth_fps)" />
+      <arg name="color_width"     value="$(arg color_width)" />
+      <arg name="color_height"    value="$(arg color_height)" />
+      <arg name="color_fps"       value="$(arg color_fps)" />
+      <arg name="align_depth"     value="true" />
+      <arg name="enable_sync"     value="true" />
+      <arg name="filters"         value="$(arg d435_filters)" />
+      <arg name="json_file_path"  value="$(arg d435_json)" />
+    </include>
+  </group>
+
+  <!-- 静态 TF -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_camera"
+        args="0 0 0 0 0 0 base_link camera_link" />
+
+  <!-- 2. RTAB-Map + 双可视化 (纯视觉) -->
+  <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
+    <arg name="rgb_topic"             value="/camera/color/image_raw" />
+    <arg name="depth_topic"           value="/camera/aligned_depth_to_color/image_raw" />
+    <arg name="camera_info_topic"     value="/camera/color/camera_info" />
+
+    <arg name="frame_id"              value="base_link" />
+    <arg name="odom_frame_id"         value="odom" />
+    <arg name="map_frame_id"          value="map" />
+
+    <arg name="approx_sync"             value="true" />
+    <arg name="approx_sync_max_interval" value="0.02" />
+    <arg name="topic_queue_size"        value="1" />
+    <arg name="queue_size"              value="5" />
+
+    <arg name="visual_odometry"       value="true" />
+    <arg name="odom_topic"            value="odom" />
+    <arg name="rtabmap_viz"           value="$(arg rtabmap_viz)" />
+    <arg name="rviz"                  value="$(arg rviz)" />
+
+    <arg name="args" value="--delete_db_on_start
+        --Rtabmap/DetectionRate 2
+        --Rtabmap/TimeThr 300
+        --Mem/IncrementalMemory true
+        --Mem/BadSignaturesIgnored true
+        --Reg/Force3DoF true
+        --Reg/Strategy 0
+        --Kp/MaxFeatures 400" />
+
+    <arg name="odom_args" value="
+        --Odom/Strategy 0
+        --Odom/ResetCountdown 1
+        --Odom/MinInliers 10
+        --OdomF2M/MaxSize 1000
+        --Vis/MinInliers 10" />
+  </include>
+
+  <!-- 3. 位姿传输到 STM32（可选） -->
+  <group if="$(arg send_to_stm32)">
+    <node pkg="d435_h30_localization" type="rtabmap_odom_handler.py"
+          name="rtabmap_pose_to_stm32" output="screen">
+      <param name="port" value="$(arg stm32_port)" />
+      <param name="baudrate" value="$(arg stm32_baudrate)" />
+      <param name="format" value="$(arg stm32_format)" />
+      <param name="send_rate" value="$(arg stm32_rate)" />
+    </node>
+  </group>
+</launch>

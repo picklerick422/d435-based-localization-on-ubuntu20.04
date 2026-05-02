@@ -1,0 +1,121 @@
+<launch>
+  <!-- D435 + IMU 融合定位（带 RTAB-Map 和双可视化） -->
+  
+  使用方法:
+    roslaunch d435_h30_localization d435_imu.launch [rviz:=true] [rtabmap_viz:=true]
+  -->
+  
+  <!-- 参数配置 -->
+  <arg name="enable_imu" default="true" />
+  <arg name="imu_port" default="/dev/ttyACM0" />
+  <arg name="imu_baud" default="460800" />
+  <arg name="rviz" default="false" />
+  <arg name="rtabmap_viz" default="true" />
+  
+  <!-- 位姿传输到STM32参数 -->
+  <arg name="send_to_stm32" default="false" />
+  <arg name="stm32_port" default="" />
+  <arg name="stm32_baudrate" default="115200" />
+  <arg name="stm32_format" default="cm_deg" />
+  <arg name="stm32_rate" default="50.0" />
+  
+  <!-- 1. 启动 D435 相机（启用深度对齐） -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <!-- 深度分辨率: 848×480 @ 90fps -->
+    <arg name="depth_width" value="848" />
+    <arg name="depth_height" value="480" />
+    <arg name="depth_fps" value="90" />
+    <arg name="infra_width" value="848" />
+    <arg name="infra_height" value="480" />
+    <arg name="infra_fps" value="90" />
+    
+    <!-- RGB分辨率: 1280×720 @ 60fps -->
+    <arg name="color_width" value="1280" />
+    <arg name="color_height" value="720" />
+    <arg name="color_fps" value="60" />
+    
+    <!-- 同步与对齐 -->
+    <arg name="align_depth" value="true" />
+    <arg name="enable_sync" value="true" />
+  </include>
+
+  <!-- 2. 启动 YESENSE 官方 IMU 驱动 -->
+  <group if="$(arg enable_imu)">
+    <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node" required="true" output="screen">
+      <param name="port" value="$(arg imu_port)" />
+      <param name="baud_rate" value="$(arg imu_baud)" />
+    </node>
+  </group>
+
+  <!-- 添加静态TF变换 - 解决unknown frame问题 -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_camera"
+    args="0 0 0 0 0 0 base_link camera_link 100" />
+  
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_imu"
+    args="0 0 0 0 0 0 camera_link imu_link 100" />
+
+  <!-- 3. 启动 RTAB-Map 融合定位（使用官方 launch 文件，带 RViz） -->
+  <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
+    <!-- RGB-D 相机配置 - 使用 D435 的话题 -->
+    <arg name="rgb_topic" value="/camera/color/image_raw" />
+    <arg name="depth_topic" value="/camera/aligned_depth_to_color/image_raw" />
+    <arg name="camera_info_topic" value="/camera/color/camera_info" />
+    
+    <!-- IMU 配置 -->
+    <arg name="imu_topic" value="/imu/data" />
+    
+    <!-- 帧配置 -->
+    <arg name="frame_id" value="camera_link" />
+    <arg name="odom_frame_id" value="odom" />
+    <arg name="map_frame_id" value="map" />
+    
+    <!-- 同步配置 - 紧时间窗，避免使用过期帧 -->
+    <arg name="approx_sync" value="true" />
+    <arg name="approx_sync_max_interval" value="0.02" />
+    <arg name="topic_queue_size" value="1" />
+    
+    <!-- 视觉里程计 -->
+    <arg name="visual_odometry" value="true" />
+    <arg name="odom_topic" value="odom" />
+    
+    <!-- 启用 RViz 和 RTAB-Map Viz 两个可视化 -->
+    <arg name="rviz" value="$(arg rviz)" />
+    <arg name="rtabmap_viz" value="$(arg rtabmap_viz)" />
+    
+    <!-- 其他参数 - 小队列降低同步延迟 -->
+    <arg name="queue_size" value="5" />
+    <arg name="args" value="--delete_db_on_start
+        --Odom/Strategy 1
+        --Odom/IMUEnabled true
+        --Odom/IMUWeight 0.7
+        --Optimizer/GravitySigma 0.01
+        --Odom/ResetOnGap false
+        --Odom/ResetOnLowInliers false
+        --Odom/FillInfoData true
+        --Odom/MinInliers 10
+        --Odom/InlierDistance 0.1
+        --Odom/RansacIterations 100
+        --Odom/IMUBufferSize 2000
+        --Odom/IMUMaxSpinUpWait 2.0
+        --Odom/IMUAngleThreshold 5.0
+        --Odom/IMUGravityVelocityThreshold 5.0
+        --Mem/IncrementalMemory true
+        --Mem/BadSignaturesIgnored true
+        --Rtabmap/DetectionRate 1
+        --Rtabmap/StartNewMapOnLoopClosure false" />
+  </include>
+
+  <!-- 4. 位姿传输到STM32（可选） -->
+  <group if="$(arg send_to_stm32)">
+    <node pkg="d435_h30_localization" type="rtabmap_odom_handler.py" 
+          name="rtabmap_pose_to_stm32" output="screen">
+      <param name="port" value="$(arg stm32_port)" />
+      <param name="baudrate" value="$(arg stm32_baudrate)" />
+      <param name="format" value="$(arg stm32_format)" />
+      <param name="send_rate" value="$(arg stm32_rate)" />
+    </node>
+  </group>
+
+  <!-- 5. 串口监控器（可选）- 通过外部脚本启动终端 -->
+  <!-- 注意：监控终端由 00.sh 启动，不在此处直接启动 -->
+</launch>
